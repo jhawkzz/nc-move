@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Jered's Moving to North Carolina Projection Meter</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #f7f4ef;
+    font-family: Georgia, 'Times New Roman', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 48px;
+  }
+
+  /* ── Masthead ── */
+  .masthead {
+    width: 100%;
+    max-width: 600px;
+    text-align: center;
+    border-top: 3px solid #111;
+    padding-top: 10px;
+    margin-bottom: 5px;
+  }
+  .overline {
+    font: 10px/1 Arial, sans-serif;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 8px;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: bold;
+    line-height: 1.25;
+    color: #111;
+  }
+  h1 em { font-style: italic; }
+
+  .byline {
+    font: italic 12px/1 Georgia, serif;
+    color: #aaa;
+    margin: 8px 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .dot {
+    width: 7px; height: 7px;
+    background: #e11d48;
+    border-radius: 50%;
+    flex-shrink: 0;
+    animation: blink 1.8s infinite;
+  }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.15} }
+
+  /* ── Card ── */
+  .card {
+    background: #fff;
+    border: 1px solid #ddd;
+    max-width: 600px;
+    width: 100%;
+    padding: 24px 28px 26px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  }
+
+  /* SVG fills the card width */
+  .gauge-wrap { width: 100%; }
+  .gauge-wrap svg { display: block; width: 100%; height: auto; }
+
+  /* ── Result area ── */
+  .result {
+    text-align: center;
+    padding: 14px 0 18px;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 20px;
+  }
+  .pct {
+    font-size: 66px;
+    font-weight: bold;
+    line-height: 1;
+    color: #7c3aed;
+    transition: color .4s;
+  }
+  .pct-sub {
+    font: 10px/1 Arial, sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #bbb;
+    margin-top: 5px;
+  }
+  .verdict {
+    font-size: 14px;
+    font-style: italic;
+    color: #555;
+    margin-top: 10px;
+    min-height: 20px;
+  }
+
+  .fine-print {
+    font: italic 11px/1.65 Georgia, serif;
+    color: #bbb;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="overline">The McFerron Family Dispatch &nbsp;|&nbsp; Relocation Edition</div>
+  <h1>Jered's Moving to <em>North Carolina</em><br>Projection Meter</h1>
+</div>
+<div class="byline">
+  <span class="dot"></span>
+  Updated continuously &nbsp;·&nbsp; Modeling based on vibes and stubbornness
+</div>
+
+<div class="card">
+
+  <!-- ════════════════════ SVG GAUGE ════════════════════ -->
+  <!-- viewBox 560×255: gauge arc occupies top 210px, labels use bottom 45px -->
+  <!-- Arc center: (280, 210). Arc radius: 165. Arc spans from 180° → 0°.  -->
+  <!-- All content is within the viewBox — no overflow needed.              -->
+  <div class="gauge-wrap">
+    <svg id="gauge" viewBox="0 0 560 255" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Gradient spans from left arc end (x≈115) to right arc end (x≈445) -->
+        <linearGradient id="arcGrad" gradientUnits="userSpaceOnUse" x1="115" y1="0" x2="445" y2="0">
+          <stop offset="0%"   stop-color="#2563eb"/>
+          <stop offset="38%"  stop-color="#7c3aed"/>
+          <stop offset="68%"  stop-color="#db2777"/>
+          <stop offset="100%" stop-color="#dc2626"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Grey background track -->
+      <polyline id="track-bg"
+        fill="none" stroke="#e8e8e8" stroke-width="22" stroke-linecap="round"/>
+
+      <!-- Coloured gradient track -->
+      <polyline id="track-col"
+        fill="none" stroke="url(#arcGrad)" stroke-width="22" stroke-linecap="round"/>
+
+      <!-- Tick marks and percentage labels (built by JS) -->
+      <g id="ticks"></g>
+
+      <!-- "NOT HAPPENING" — positioned just below the left arc endpoint  -->
+      <text x="115" y="232"
+        text-anchor="middle"
+        font-family="Arial,Helvetica,sans-serif" font-size="10.5" font-weight="bold"
+        letter-spacing="0.4" fill="#2563eb">NOT HAPPENING</text>
+
+      <!-- "DEFINITELY MOVING" — just below the right arc endpoint -->
+      <text x="445" y="232"
+        text-anchor="middle"
+        font-family="Arial,Helvetica,sans-serif" font-size="10.5" font-weight="bold"
+        letter-spacing="0.4" fill="#dc2626">DEFINITELY MOVING</text>
+
+      <!-- Pivot dot (on top of needle base) -->
+      <circle cx="280" cy="210" r="12" fill="#1a1a1a"/>
+      <circle cx="280" cy="210" r="5"  fill="#f7f4ef"/>
+
+      <!-- Needle — rotated via JS using rotate(deg, 280, 210) -->
+      <g id="needle">
+        <line  x1="280" y1="210" x2="280" y2="57"
+               stroke="#1a1a1a" stroke-width="3.5" stroke-linecap="round"/>
+        <polygon points="280,44 273.5,63 286.5,63" fill="#1a1a1a"/>
+      </g>
+    </svg>
+  </div>
+  <!-- ═══════════════════════════════════════════════════ -->
+
+  <div class="result">
+    <div class="pct" id="pct">50%</div>
+    <div class="pct-sub">Probability of Relocation</div>
+    <div class="verdict" id="verdict">A true coin flip. The family holds its breath.</div>
+  </div>
+
+  <p class="fine-print">
+    Projections based on proprietary modeling including ambient temperature complaints,
+    the number of times Jered has googled "NC housing prices,"
+    and family group chat sentiment analysis.<br>
+    This meter may change at any moment. Refresh for the latest vibes.
+  </p>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  ✏️  EDIT THIS VALUE to update the meter (0–100)
+// ════════════════════════════════════════════════════════
+const projection = { probability: 50 };
+// ════════════════════════════════════════════════════════
+
+// ── Arc geometry ──────────────────────────────────────────
+const CX = 280, CY = 210, R = 165;
+
+// Build a polyline from 180° to 0° (traces the TOP semicircle: left → top → right)
+// At angle θ: x = CX + R·cos(θ),  y = CY − R·sin(θ)
+function buildArc(r, steps = 120) {
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    const deg = 180 - (i / steps) * 180;          // 180 → 0
+    const rad = (deg * Math.PI) / 180;
+    pts.push((CX + r * Math.cos(rad)).toFixed(2) + ',' +
+             (CY - r * Math.sin(rad)).toFixed(2));
+  }
+  return pts.join(' ');
+}
+
+const arcPts = buildArc(R);
+document.getElementById('track-bg').setAttribute('points', arcPts);
+document.getElementById('track-col').setAttribute('points', arcPts);
+
+// ── Tick marks ────────────────────────────────────────────
+// Lines at 0%, 25%, 50%, 75%, 100%; percentage text only at 25%, 50%, 75%
+const ticksEl = document.getElementById('ticks');
+
+[0, 25, 50, 75, 100].forEach(pct => {
+  const deg = 180 - pct * 1.8;          // 0% → 180°,  100% → 0°
+  const rad = (deg * Math.PI) / 180;
+  const cos = Math.cos(rad), sin = Math.sin(rad);
+
+  // Short tick line (straddles the arc track)
+  const ln = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+  ln.setAttribute('x1', (CX + (R - 15) * cos).toFixed(1));
+  ln.setAttribute('y1', (CY - (R - 15) * sin).toFixed(1));
+  ln.setAttribute('x2', (CX + (R + 15) * cos).toFixed(1));
+  ln.setAttribute('y2', (CY - (R + 15) * sin).toFixed(1));
+  ln.setAttribute('stroke', '#bbb');
+  ln.setAttribute('stroke-width', '2.5');
+  ticksEl.appendChild(ln);
+
+  // Percentage label — only for 25 / 50 / 75
+  if (pct === 25 || pct === 50 || pct === 75) {
+    const lx = (CX + (R + 34) * cos).toFixed(1);
+    const ly = (CY - (R + 34) * sin + 4).toFixed(1);
+    const anchor = 'middle';
+
+    const tx = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    tx.setAttribute('x', lx);
+    tx.setAttribute('y', ly);
+    tx.setAttribute('text-anchor', anchor);
+    tx.setAttribute('font-family', 'Arial,Helvetica,sans-serif');
+    tx.setAttribute('font-size', '11.5');
+    tx.setAttribute('fill', '#aaa');
+    tx.textContent = pct + '%';
+    ticksEl.appendChild(tx);
+  }
+});
+
+// ── Verdict strings ───────────────────────────────────────
+const VERDICTS = [
+  [  0,   4, "Absolutely not. Zero chance. He said so himself."],
+  [  5,  14, "Effectively zero. Don't book the moving truck."],
+  [ 15,  24, "Highly unlikely — though he's been googling things."],
+  [ 25,  34, "Still skeptical, but something seems to be shifting."],
+  [ 35,  44, "Leaning no, but asking a lot of questions about Raleigh."],
+  [ 45,  55, "A true coin flip. The family holds its breath."],
+  [ 56,  65, "Edging toward yes. He's been checking real estate apps."],
+  [ 66,  74, "More likely than not. He keeps mentioning the weather down there."],
+  [ 75,  84, "Very likely. He's been asking about moving trucks."],
+  [ 85,  92, "Almost certain. He's probably already picked a neighborhood."],
+  [ 93,  99, "It's happening. He just hasn't told everyone yet."],
+  [100, 100, "Confirmed. Jered is moving to NC. Pack the sweet tea."],
+];
+const getVerdict = p => (VERDICTS.find(([lo, hi]) => p >= lo && p <= hi) || [])[2] || '';
+
+// ── Colour interpolation (blue → purple → pink → red) ────
+function lerpColor(t) {
+  const stops = [
+    { p: 0.00, r: 37,  g: 99,  b: 235 },
+    { p: 0.38, r: 124, g: 58,  b: 237 },
+    { p: 0.68, r: 219, g: 39,  b: 119 },
+    { p: 1.00, r: 220, g: 38,  b: 38  },
+  ];
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (t <= stops[i + 1].p) {
+      const u = (t - stops[i].p) / (stops[i + 1].p - stops[i].p);
+      const lr = (a, b) => Math.round(a + u * (b - a));
+      return `rgb(${lr(stops[i].r, stops[i+1].r)},${lr(stops[i].g, stops[i+1].g)},${lr(stops[i].b, stops[i+1].b)})`;
+    }
+  }
+  return 'rgb(220,38,38)';
+}
+
+// ── Core update ───────────────────────────────────────────
+const needle  = document.getElementById('needle');
+const pctEl   = document.getElementById('pct');
+const verdEl  = document.getElementById('verdict');
+
+function set(pct) {
+  // 0% → -90° (pointing left), 50% → 0° (pointing up), 100% → +90° (right)
+  const rot = (pct / 100) * 180 - 90;
+  needle.setAttribute('transform', `rotate(${rot},${CX},${CY})`);
+  pctEl.textContent   = pct + '%';
+  pctEl.style.color   = lerpColor(pct / 100);
+  verdEl.textContent  = getVerdict(pct);
+}
+
+// ── Intro animation: sweep from 0 → projection.probability ──
+const TARGET = Math.max(0, Math.min(100, projection.probability));
+let t0 = null;
+function animFrame(ts) {
+  if (!t0) t0 = ts;
+  const progress = Math.min((ts - t0) / 1300, 1);
+  const ease = 1 - Math.pow(1 - progress, 3);   // ease-out cubic
+  set(Math.round(ease * TARGET));
+  if (progress < 1) requestAnimationFrame(animFrame);
+  else set(TARGET);
+}
+requestAnimationFrame(animFrame);
+</script>
+
+</body>
+</html>
