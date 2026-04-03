@@ -102,16 +102,6 @@
     margin-top: 10px;
     min-height: 20px;
   }
-  .reason {
-    font: 11px/1 Arial, sans-serif;
-    letter-spacing: 0.3px;
-    color: #bbb;
-    margin-top: 10px;
-  }
-  .reason span {
-    font-weight: bold;
-    color: #999;
-  }
 
   .fine-print {
     font: italic 11px/1.65 Georgia, serif;
@@ -189,8 +179,7 @@
   <div class="result">
     <div class="pct" id="pct">50%</div>
     <div class="pct-sub">Probability of Relocation</div>
-    <div class="verdict" id="verdict">A true coin flip. The family holds its breath.</div>
-    <div class="reason" id="reason"></div>
+    <div class="verdict" id="verdict"></div>
   </div>
 
   <p class="fine-print">
@@ -318,9 +307,8 @@ function lerpColor(t) {
 const needle  = document.getElementById('needle');
 const pctEl   = document.getElementById('pct');
 const verdEl  = document.getElementById('verdict');
-const reasonEl = document.getElementById('reason');
 if (projection.reason) {
-  reasonEl.innerHTML = `<span>Latest change based on:</span> ${projection.reason}`;
+  verdEl.textContent = projection.reason;
 }
 
 function set(pct) {
@@ -329,7 +317,6 @@ function set(pct) {
   needle.setAttribute('transform', `rotate(${rot},${CX},${CY})`);
   pctEl.textContent   = pct + '%';
   pctEl.style.color   = lerpColor(pct / 100);
-  verdEl.textContent  = getVerdict(pct);
 }
 
 // ── Intro animation: sweep from 0 → projection.probability ──
