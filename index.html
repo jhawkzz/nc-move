@@ -206,8 +206,20 @@
 // ════════════════════════════════════════════════════════
 const projection = {
   probability: 45,
-  reason: "Dad didn't go to Georgia's performance"
+  reason: "Dad didn't go to Georgia's performance",
+  v: 1
 };
+
+// Cache-buster: if the URL doesn't have ?v=<current>, redirect to it.
+// Increment `v` each time you push an update.
+(function () {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('v') !== String(projection.v)) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('v', projection.v);
+    window.location.replace(url.toString());
+  }
+})();
 // ════════════════════════════════════════════════════════
 
 // ── Arc geometry ──────────────────────────────────────────
