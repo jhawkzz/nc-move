@@ -102,6 +102,16 @@
     margin-top: 10px;
     min-height: 20px;
   }
+  .reason {
+    font: 11px/1 Arial, sans-serif;
+    letter-spacing: 0.3px;
+    color: #bbb;
+    margin-top: 10px;
+  }
+  .reason span {
+    font-weight: bold;
+    color: #999;
+  }
 
   .fine-print {
     font: italic 11px/1.65 Georgia, serif;
@@ -180,6 +190,7 @@
     <div class="pct" id="pct">50%</div>
     <div class="pct-sub">Probability of Relocation</div>
     <div class="verdict" id="verdict">A true coin flip. The family holds its breath.</div>
+    <div class="reason" id="reason"></div>
   </div>
 
   <p class="fine-print">
@@ -193,7 +204,10 @@
 // ════════════════════════════════════════════════════════
 //  ✏️  EDIT THIS VALUE to update the meter (0–100)
 // ════════════════════════════════════════════════════════
-const projection = { probability: 50 };
+const projection = {
+  probability: 50,
+  reason: "Dad seemed pretty happy at dinner"
+};
 // ════════════════════════════════════════════════════════
 
 // ── Arc geometry ──────────────────────────────────────────
@@ -292,6 +306,10 @@ function lerpColor(t) {
 const needle  = document.getElementById('needle');
 const pctEl   = document.getElementById('pct');
 const verdEl  = document.getElementById('verdict');
+const reasonEl = document.getElementById('reason');
+if (projection.reason) {
+  reasonEl.innerHTML = `<span>Latest change based on:</span> ${projection.reason}`;
+}
 
 function set(pct) {
   // 0% → -90° (pointing left), 50% → 0° (pointing up), 100% → +90° (right)
